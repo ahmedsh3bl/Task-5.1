@@ -5,7 +5,8 @@ import { connectDB } from '../config/db.js';
 import { Instructor } from '../models/Instructor.js';
 
 // Seed data for the Instructor Portal NoSQL injection lab.
-// Passwords are plaintext ON PURPOSE (see Instructor model / Flow.md).
+// Passwords are given in plaintext here and hashed with bcrypt by the
+// Instructor model's pre('save') hook when the documents are created.
 const instructors = [
   {
     name: 'Prof. Alice Smith',
@@ -50,7 +51,8 @@ const instructors = [
 async function run() {
   await connectDB();
   await Instructor.deleteMany({});
-  const created = await Instructor.insertMany(instructors);
+  // create() (not insertMany) so the pre('save') hashing hook runs.
+  const created = await Instructor.create(instructors);
   console.log(`Seeded ${created.length} instructor(s):`);
   for (const i of created) {
     console.log(`  - ${i.username} (${i.role})`);
